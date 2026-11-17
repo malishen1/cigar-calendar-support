@@ -1,11 +1,588 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cigar Calendar Support</title><style>body{font:17px/1.6 -apple-system,system-ui,sans-serif;max-width:720px;margin:0 auto;padding:32px 20px;background:#14110d;color:#efe7da}h1,h2{color:#d9a75b;font-family:Georgia,serif;font-weight:500}a{color:#d9a75b}.card{border:1px solid #3a3127;border-radius:14px;padding:16px 20px;margin:16px 0}nav a{margin-right:16px}</style></head><body>
-<nav><a href="./">Support</a><a href="privacy.html">Privacy</a></nav>
-<h1>Cigar Calendar: Support</h1>
-<p>Cigar Calendar is a private collection journal for cigar lovers: log sessions, manage your humidor, track humidity and see your year in cigars.</p>
-<div class="card"><h2>Contact us</h2><p>For questions, problems or feedback, email <a href="mailto:sales@matzhis.com">sales@matzhis.com</a>. We reply within two working days.</p></div>
-<div class="card"><h2>Delete your account</h2><p>In the app, tap the profile icon, open Settings and choose <b>Delete Account</b>, then confirm. Your account and its journal, humidor, humidity readings, community content and calendar links are permanently removed.</p></div>
-<div class="card"><h2>Apple Calendar</h2><p>Signed-in users can open Profile and tap <b>Add to Apple Calendar</b>. Your sessions then appear in the Calendar app on iPhone, iPad and Mac and update automatically. Turn the link off from the same screen and remove the subscribed calendar in the Calendar app.</p></div>
-<div class="card"><h2>Report content</h2><p>Tap the flag icon on any community post or comment, or email us. Reported content is reviewed within 24 hours and users who break the rules are removed.</p></div>
-<div class="card"><h2>Community guidelines</h2><p>No objectionable, offensive or abusive content. The app is for adults (18+) only.</p></div>
-</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cigar Calendar</title>
+<meta name="description" content="Cigar Calendar is an iOS app to log every cigar you smoke, rate it, pair it with your drink and keep your humidor in check.">
+<meta name="theme-color" content="#0d0907">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a members' club at night. One narrow column on phones, 1080px on desktop; gold hairlines do the dividing, leather panels hold content. Single theme by choice. */
+:root{
+  color-scheme:dark;
+  --ink:#0d0907; --leather:#2a1a12; --leather-2:#1a100b;
+  --gold:#c9a45c; --gold-soft:rgba(201,164,92,.32); --gold-faint:rgba(201,164,92,.14);
+  --cream:#f3e9d8; --muted:#b3a48d;
+  --display:"Cinzel","Trajan Pro","Times New Roman",serif;
+  --body:"Lato","Helvetica Neue",Arial,sans-serif;
+  --wrap:1080px; --ease:cubic-bezier(.22,.8,.24,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ink);color:var(--cream);font:300 17px/1.65 var(--body);overflow-x:hidden}
+img,svg{display:block;max-width:100%}
+a{color:inherit}
+h1,h2,h3,p,figure{margin:0}
+h1,h2,h3{text-wrap:balance;font-family:var(--display);font-weight:400}
+:focus-visible{outline:1px solid var(--gold);outline-offset:4px;border-radius:4px}
+.wrap{width:min(var(--wrap),100% - 40px);margin-inline:auto}
+section{padding:72px 0;position:relative}
+.rule{height:1px;border:0;margin:0;background:linear-gradient(90deg,transparent,var(--gold-soft) 20%,var(--gold-soft) 80%,transparent)}
+.eyebrow{font:700 12px/1 var(--body);letter-spacing:.34em;text-transform:uppercase;color:var(--gold)}
+.h2{font-size:clamp(28px,5.4vw,46px);line-height:1.12;letter-spacing:.04em;margin:16px 0 14px}
+.lead{color:var(--muted);max-width:58ch}
+.head{display:grid;gap:0;margin-bottom:36px}
+
+/* grain + progress */
+.grain{position:fixed;inset:0;z-index:70;pointer-events:none;opacity:.09;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E")}
+.progress{position:fixed;inset:0 0 auto 0;height:2px;z-index:80;background:linear-gradient(90deg,#8f6f33,var(--gold),#ecd49a);transform:scaleX(0);transform-origin:0 50%;will-change:transform}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:54px;padding:12px 26px;border-radius:2px;text-decoration:none;cursor:pointer;
+  font:700 13px/1.2 var(--body);letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--gold);transition:transform .35s var(--ease),background-color .35s,color .35s}
+.btn-gold{background:var(--gold);color:#1a1008}
+.btn-gold:hover{background:#dcbb78;transform:translate3d(0,-2px,0)}
+.btn-ghost{color:var(--cream);border-color:var(--gold-soft);background:transparent}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+.btn svg{width:19px;height:19px;flex:0 0 auto}
+.btn.soon{background:transparent;color:var(--gold);cursor:default;border-style:dashed}
+.btn.soon:hover{transform:none;background:transparent}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;padding:0;min-height:100svh;display:grid;align-items:center;overflow:hidden;isolation:isolate;--mx:0;--my:0;--sy:0;
+  background:radial-gradient(90% 60% at 70% 38%,rgba(42,26,18,.95),transparent 70%),linear-gradient(180deg,#120b08,var(--ink))}
+#smoke{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:.9;transform:translate3d(calc(var(--mx)*-10px),calc(var(--sy)*.18px),0);will-change:transform}
+.hero::after{content:"";position:absolute;inset:auto 0 0 0;height:160px;background:linear-gradient(180deg,transparent,var(--ink));z-index:-1;pointer-events:none}
+.brand{position:absolute;top:22px;left:0;right:0;z-index:3}
+.brand .wrap{display:flex;align-items:center;justify-content:space-between}
+.brand b{font:600 14px/1 var(--display);letter-spacing:.3em;text-transform:uppercase}
+.brand b i{font-style:normal;color:var(--gold)}
+.brand a{font:700 11px/1 var(--body);letter-spacing:.24em;text-transform:uppercase;text-decoration:none;color:var(--muted);padding:10px 0}
+.brand a:hover{color:var(--gold)}
+.hero-in{display:grid;gap:44px;padding:104px 0 72px}
+.hero h1{font-size:clamp(31px,8.4vw,62px);line-height:1.12;letter-spacing:.045em;text-transform:uppercase;margin:20px 0 20px}
+.hero h1 em{font-style:normal;color:var(--gold)}
+.hero h1 .w{display:inline-block}
+.js .hero h1 .w{animation:word 1.1s var(--ease) both;animation-delay:calc(var(--i)*90ms + 150ms)}
+@keyframes word{from{opacity:0;transform:translate3d(0,.5em,0)}to{opacity:1;transform:none}}
+.sub{font-size:clamp(17px,2.2vw,20px);color:#dccfb8;max-width:44ch}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.cta .btn{flex:1 1 240px}
+.fine{margin-top:16px;font-size:13px;letter-spacing:.06em;color:var(--muted)}
+
+/* phone */
+.stage{perspective:1200px;display:grid;place-items:center;transform:translate3d(0,calc(var(--sy)*-.06px),0);will-change:transform}
+.float{animation:float 8s ease-in-out infinite;will-change:transform}
+@keyframes float{0%,100%{transform:translate3d(0,-8px,0)}50%{transform:translate3d(0,10px,0)}}
+.phone{position:relative;width:min(250px,62vw);aspect-ratio:9/19.3;border-radius:42px;padding:9px;transform-style:preserve-3d;
+  background:linear-gradient(145deg,#4a3a2a,#17100b 30%,#0b0705 70%,#3a2c1f);
+  box-shadow:0 0 0 1px var(--gold-soft),0 40px 80px rgba(0,0,0,.7),0 0 120px rgba(201,164,92,.12);
+  transform:rotateY(calc(-13deg + var(--ry,0deg))) rotateX(calc(5deg + var(--rx,0deg)));transition:transform .2s ease-out;will-change:transform}
+.screen{position:relative;width:100%;height:100%;border-radius:34px;overflow:hidden;background:linear-gradient(180deg,#1c120c,#0d0907)}
+.screen img,.slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.phone::before{content:"";position:absolute;top:17px;left:50%;width:30%;height:19px;margin-left:-15%;border-radius:12px;background:#050302;z-index:3}
+.phone::after{content:"";position:absolute;inset:9px;border-radius:34px;background:linear-gradient(120deg,rgba(255,255,255,.14),transparent 28%,transparent 75%,rgba(255,255,255,.05));pointer-events:none;z-index:2}
+/* drawn fallback UI (shown until img/app.png exists) */
+.ui{position:absolute;inset:0;padding:52px 16px 16px;display:grid;align-content:start;gap:12px;font-size:11px;color:var(--muted)}
+.ui h4{margin:0;font:600 13px/1.2 var(--display);letter-spacing:.14em;color:var(--cream);text-transform:uppercase}
+.ui .row{border:1px solid var(--gold-faint);border-radius:10px;padding:10px 11px;background:rgba(42,26,18,.6);display:grid;gap:4px}
+.ui .row b{font:700 11.5px/1.2 var(--body);color:var(--cream);letter-spacing:.03em}
+.ui .stars{color:var(--gold);letter-spacing:.2em;font-size:11px}
+.ui .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.ui .cal i{aspect-ratio:1;border-radius:50%;border:1px solid var(--gold-faint)}
+.ui .cal i.on{background:var(--gold);border-color:var(--gold)}
+.ui .tag{font:700 9px/1 var(--body);letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+
+/* ---------- FEATURES ---------- */
+.grid{display:grid;gap:14px}
+.card{position:relative;padding:28px 24px;border:1px solid var(--gold-faint);border-radius:4px;
+  background:linear-gradient(160deg,rgba(42,26,18,.72),rgba(26,16,11,.5));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:transform .45s var(--ease);isolation:isolate}
+.card::before{content:"";position:absolute;inset:-1px;border-radius:inherit;border:1px solid var(--gold);box-shadow:0 18px 50px rgba(201,164,92,.13);opacity:0;transition:opacity .45s;z-index:-1}
+.card:hover{transform:translate3d(0,-4px,0)}
+.card:hover::before{opacity:1}
+.ico{width:46px;height:46px;border:1px solid var(--gold-soft);border-radius:50%;display:grid;place-items:center;color:var(--gold);margin-bottom:20px}
+.ico svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.card h3{font-size:18px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.card p{font-size:15.5px;color:var(--muted)}
+
+/* ---------- STEPS ---------- */
+.how{background:linear-gradient(180deg,transparent,rgba(42,26,18,.4) 50%,transparent)}
+.steps{display:grid;gap:0;counter-reset:s}
+.step{counter-increment:s;position:relative;padding:26px 0 26px 76px;border-top:1px solid var(--gold-faint)}
+.step:last-child{border-bottom:1px solid var(--gold-faint)}
+.step::before{content:counter(s,upper-roman);position:absolute;left:0;top:24px;width:52px;height:52px;display:grid;place-items:center;border:1px solid var(--gold);border-radius:50%;font:400 17px/1 var(--display);color:var(--gold)}
+.step h3{font-size:20px;letter-spacing:.1em;text-transform:uppercase}
+.step p{color:var(--muted);margin-top:6px;font-size:15.5px;max-width:40ch}
+
+/* ---------- CAROUSEL ---------- */
+.shots{overflow:hidden}
+.car{position:relative;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none;padding:10px 0 6px;outline-offset:8px}
+.car.drag{cursor:grabbing}
+.track{display:flex;gap:22px;will-change:transform}
+.slide{position:relative;flex:0 0 auto;width:min(230px,60vw);aspect-ratio:9/19.3;border-radius:32px;overflow:hidden;border:1px solid var(--gold-soft);
+  background:linear-gradient(180deg,#22150e,#0d0907);box-shadow:0 30px 60px rgba(0,0,0,.55);
+  transform:scale(.9);opacity:.5;transition:transform .5s var(--ease),opacity .5s var(--ease)}
+.slide.on{transform:none;opacity:1}
+.slide .ph{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:14px;text-align:center;padding:20px;color:var(--gold)}
+.slide .ph svg{width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round}
+.slide .ph b{font:400 15px/1.3 var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--cream)}
+.slide .ph span{font-size:12.5px;color:var(--muted);max-width:18ch}
+.car-ui{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:26px}
+.arrow{width:46px;height:46px;border-radius:50%;border:1px solid var(--gold-soft);background:transparent;color:var(--gold);cursor:pointer;display:grid;place-items:center;transition:border-color .3s,opacity .3s}
+.arrow:hover{border-color:var(--gold)}
+.arrow:disabled{opacity:.3;cursor:default}
+.arrow svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.dots{display:flex;gap:4px}
+.dots button{width:28px;height:28px;border:0;background:transparent;cursor:pointer;display:grid;place-items:center;padding:0}
+.dots button::before{content:"";width:7px;height:7px;border-radius:50%;border:1px solid var(--gold);transition:transform .3s,background-color .3s}
+.dots button[aria-current="true"]::before{background:var(--gold);transform:scale(1.25)}
+
+/* ---------- NEWS ---------- */
+.news{display:grid;gap:14px}
+.post{display:grid;grid-template-rows:auto 1fr auto;gap:12px;padding:26px 24px;text-decoration:none;border:1px solid var(--gold-faint);border-radius:4px;background:var(--leather-2);transition:transform .45s var(--ease),border-color .45s}
+.post:hover{transform:translate3d(0,-4px,0);border-color:var(--gold)}
+.post small{font:700 11px/1 var(--body);letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+.post h3{font-size:20px;line-height:1.3;letter-spacing:.05em}
+.post p{font-size:15px;color:var(--muted)}
+.post span{font:700 12px/1 var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--cream);display:inline-flex;gap:10px;align-items:center;margin-top:8px}
+.post span::after{content:"→";color:var(--gold);transition:transform .35s var(--ease)}
+.post:hover span::after{transform:translate3d(5px,0,0)}
+
+/* ---------- FAQ ---------- */
+.faq{max-width:760px;border-top:1px solid var(--gold-faint)}
+.faq details{border-bottom:1px solid var(--gold-faint)}
+.faq summary{list-style:none;cursor:pointer;position:relative;padding:22px 44px 22px 0;font:400 18px/1.35 var(--display);letter-spacing:.06em}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before,.faq summary::after{content:"";position:absolute;right:6px;top:50%;width:15px;height:1px;background:var(--gold);transition:transform .35s var(--ease)}
+.faq summary::after{transform:rotate(90deg)}
+.faq details[open] summary::after{transform:rotate(0)}
+.faq details p{padding:0 0 24px;color:var(--muted);max-width:62ch}
+.faq details[open] p{animation:open .45s var(--ease)}
+@keyframes open{from{opacity:0;transform:translate3d(0,-6px,0)}}
+
+.closing{text-align:center}
+.closing .h2{max-width:20ch;margin-inline:auto}
+.closing .cta{justify-content:center}
+.closing .cta .btn{flex:0 1 320px}
+
+footer{border-top:1px solid var(--gold-faint);padding:40px 0 120px;font-size:14px;color:var(--muted)}
+.foot{display:grid;gap:22px}
+.foot nav{display:flex;flex-wrap:wrap;gap:8px 28px}
+.foot nav a{text-decoration:none;font:700 12px/1 var(--body);letter-spacing:.22em;text-transform:uppercase;color:var(--cream);padding:8px 0}
+.foot nav a:hover{color:var(--gold)}
+
+/* sticky bar (mobile) */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:rgba(13,9,7,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--gold-soft);
+  transform:translate3d(0,110%,0);transition:transform .5s var(--ease)}
+.bar.show{transform:none}
+.bar b{font:600 12px/1.3 var(--display);letter-spacing:.2em;text-transform:uppercase}
+.bar .btn{min-height:44px;padding:8px 16px;font-size:11px;letter-spacing:.16em}
+
+/* reveal */
+.js .rv{opacity:0;transform:translate3d(0,24px,0);transition:opacity .9s var(--ease),transform .9s var(--ease);transition-delay:calc(var(--d,0)*110ms)}
+.js .rv.in{opacity:1;transform:none}
+
+@media (min-width:640px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .news{grid-template-columns:repeat(3,1fr)}
+  .cta .btn{flex:0 0 auto}
+  .foot{grid-template-columns:1fr auto;align-items:center}
+}
+@media (min-width:900px){
+  section{padding:112px 0}
+  .bar{display:none}
+  footer{padding-bottom:48px}
+  .hero-in{grid-template-columns:1.1fr .9fr;align-items:center;gap:56px;padding:120px 0 96px}
+  .phone{width:290px}
+  .ui{font-size:12px;padding:58px 18px 18px}
+  .grid{grid-template-columns:repeat(4,1fr)}
+  .steps{grid-template-columns:repeat(3,1fr);gap:28px}
+  .step,.step:last-child{border:0;border-top:1px solid var(--gold-soft);padding:96px 0 0}
+  .step::before{top:24px}
+  .slide{width:250px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .js .rv{opacity:1;transform:none}
+  #smoke,.stage{transform:none}
+}
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- 1. HERO -->
+<header class="hero" id="hero">
+  <canvas id="smoke" aria-hidden="true"></canvas>
+  <div class="brand"><div class="wrap"><b>Cigar <i>Calendar</i></b><a href="#how">How it works</a></div></div>
+
+  <div class="wrap hero-in">
+    <div>
+      <p class="eyebrow">A cigar journal for iPhone</p>
+      <h1 id="headline">Never forget a cigar <em>you smoked</em></h1>
+      <p class="sub">Log every smoke, rate it, pair it with your drink and keep your humidor in check.</p>
+      <div class="cta">
+        <a class="btn btn-gold" data-store href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/></svg>
+          <span data-store-label>Download on the App Store</span>
+        </a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <p class="fine">For iPhone. Guest mode included, no account needed.</p>
+    </div>
+
+    <div class="stage" id="stage" aria-hidden="true">
+      <div class="float">
+        <div class="phone" id="phone">
+          <div class="screen">
+            <div class="ui">
+              <span class="tag">Tonight</span>
+              <h4>Your last smoke</h4>
+              <div class="row"><b>Robusto, maduro wrapper</b><span class="stars">★★★★☆</span><span>Paired with a single malt</span></div>
+              <div class="row"><b>Humidor</b><span>24 cigars resting</span></div>
+              <span class="tag">This month</span>
+              <div class="cal"><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i class="on"></i></div>
+            </div>
+            <img src="img/app.png" alt="" width="580" height="1244" draggable="false" onerror="this.remove()">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+<hr class="rule">
+
+<main>
+<!-- 2. FEATURES -->
+<section id="features">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">What it does</p>
+      <h2 class="h2">Everything about a smoke, kept in one place</h2>
+    </div>
+    <div class="grid">
+      <article class="card rv">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.500l2.6 5.3 5.9.9-4.3 4.1 1 5.800L12 16.900l-5.2 2.7 1-5.800L3.5 9.700l5.9-.900z"/></svg></div>
+        <h3>Log &amp; rate</h3><p>Record the cigar, the date and your score while the ash is still warm.</p>
+      </article>
+      <article class="card rv">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12l-1.3 8.500a4.8 4.8 0 0 1-9.4 0zM12 16.500V20M8.5 20h7M6.6 8.500h10.8"/></svg></div>
+        <h3>Pairings</h3><p>Note what was in the glass. Whisky, rum or coffee, and whether it worked.</p>
+      </article>
+      <article class="card rv">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 9.500h17v9h-17zM3.5 9.500l2-4h13l2 4M10.5 13.500h3"/></svg></div>
+        <h3>My Humidor</h3><p>Know what you have resting, how many are left and what to reach for next.</p>
+      </article>
+      <article class="card rv">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.500h16v13H4zM4 10.500h16M8 4v4M16 4v4"/><circle cx="9" cy="14.5" r=".8" fill="currentColor"/><circle cx="15" cy="14.5" r=".8" fill="currentColor"/></svg></div>
+        <h3>Calendar</h3><p>Every smoke on the day it happened. Scroll back a month or a year.</p>
+      </article>
+    </div>
+  </div>
+</section>
+<hr class="rule">
+
+<!-- 3. HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">How it works</p>
+      <h2 class="h2">Three steps, about a minute</h2>
+    </div>
+    <div class="steps">
+      <div class="step rv"><h3>Light up</h3><p>Enjoy the cigar. The app stays out of the way until you want it.</p></div>
+      <div class="step rv"><h3>Log in seconds</h3><p>Name it, score it, add the drink beside it. Done before the second third.</p></div>
+      <div class="step rv"><h3>Remember forever</h3><p>It lands on your calendar, so the good ones are easy to find again.</p></div>
+    </div>
+  </div>
+</section>
+<hr class="rule">
+
+<!-- 4. SCREENSHOTS -->
+<section class="shots" id="screens">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">Inside the app</p>
+      <h2 class="h2">A closer look</h2>
+      <p class="lead">Drag, swipe or use the arrows.</p>
+    </div>
+  </div>
+  <div class="car" id="car" tabindex="0" role="group" aria-roledescription="carousel" aria-label="App screenshots">
+    <div class="track" id="track">
+      <figure class="slide"><div class="ph"><svg viewBox="0 0 24 24"><path d="M12 3.500l2.6 5.3 5.9.9-4.3 4.1 1 5.800L12 16.900l-5.2 2.7 1-5.800L3.5 9.700l5.9-.900z"/></svg><b>Log &amp; rate</b><span>Score a smoke in a few taps</span></div><img src="img/s1.png" alt="Screenshot: logging and rating a cigar" loading="lazy" draggable="false" onerror="this.remove()"></figure>
+      <figure class="slide"><div class="ph"><svg viewBox="0 0 24 24"><path d="M6 4h12l-1.3 8.500a4.8 4.8 0 0 1-9.4 0zM12 16.500V20M8.5 20h7"/></svg><b>Pairings</b><span>Whisky, rum, coffee</span></div><img src="img/s2.png" alt="Screenshot: drink pairings" loading="lazy" draggable="false" onerror="this.remove()"></figure>
+      <figure class="slide"><div class="ph"><svg viewBox="0 0 24 24"><path d="M3.5 9.500h17v9h-17zM3.5 9.500l2-4h13l2 4M10.5 13.500h3"/></svg><b>My Humidor</b><span>What is resting, what is left</span></div><img src="img/s3.png" alt="Screenshot: humidor inventory" loading="lazy" draggable="false" onerror="this.remove()"></figure>
+      <figure class="slide"><div class="ph"><svg viewBox="0 0 24 24"><path d="M4 6.500h16v13H4zM4 10.500h16M8 4v4M16 4v4"/></svg><b>Calendar</b><span>Every smoke, by date</span></div><img src="img/s4.png" alt="Screenshot: calendar of smokes" loading="lazy" draggable="false" onerror="this.remove()"></figure>
+    </div>
+  </div>
+  <div class="car-ui">
+    <button class="arrow" id="prev" type="button" aria-label="Previous screenshot"><svg viewBox="0 0 16 16"><path d="M10 3L5 8l5 5"/></svg></button>
+    <div class="dots" id="dots"></div>
+    <button class="arrow" id="next" type="button" aria-label="Next screenshot"><svg viewBox="0 0 16 16"><path d="M6 3l5 5-5 5"/></svg></button>
+  </div>
+</section>
+<hr class="rule">
+
+<!-- 5. NEWS -->
+<section id="news">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">Luxury news weekly</p>
+      <h2 class="h2">The week, on Instagram</h2>
+      <p class="lead">A short weekly read on cigars and the things that go well with them, posted at @cigarcalendar.</p>
+    </div>
+    <div class="news">
+      <a class="post rv" href="https://www.instagram.com/cigarcalendar/" target="_blank" rel="noopener"><small>Cigars</small><h3>New releases and what is worth lighting</h3><p>The week's notable cigars in one carousel.</p><span>Read on Instagram</span></a>
+      <a class="post rv" href="https://www.instagram.com/cigarcalendar/" target="_blank" rel="noopener"><small>In the glass</small><h3>Pairings to try this weekend</h3><p>Whisky, rum and coffee matched to a smoke.</p><span>Read on Instagram</span></a>
+      <a class="post rv" href="https://www.instagram.com/cigarcalendar/" target="_blank" rel="noopener"><small>The good life</small><h3>Watches, travel and quiet luxury</h3><p>What caught our eye beyond the humidor.</p><span>Read on Instagram</span></a>
+    </div>
+  </div>
+</section>
+<hr class="rule">
+
+<!-- 6. FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">Questions</p>
+      <h2 class="h2">Before you download</h2>
+    </div>
+    <div class="faq">
+      <details name="faq" class="rv"><summary>Is it free?</summary><p>Cigar Calendar is free to download. You can start logging straight away in guest mode.</p></details>
+      <details name="faq" class="rv"><summary>Do I need an account?</summary><p>No. Guest mode works from the first launch, so you can start logging straight away. Create an account later if you want one.</p></details>
+      <details name="faq" class="rv"><summary>Is my data private?</summary><p>Your log is yours. What is stored and why is explained in our <a href="privacy.html">privacy policy</a>.</p></details>
+      <details name="faq" class="rv"><summary>How do I delete my account?</summary><p>Open Settings in the app and choose Delete account. That removes your account and the data attached to it. If you get stuck, <a href="support.html">support</a> will help.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="closing" style="padding-top:0">
+  <div class="wrap">
+    <h2 class="h2">Keep the good ones</h2>
+    <div class="cta"><a class="btn btn-gold" data-store href="#"><span data-store-label>Download on the App Store</span></a></div>
+  </div>
+</section>
+</main>
+
+<!-- 7. FOOTER -->
+<footer>
+  <div class="wrap foot">
+    <nav aria-label="Footer">
+      <a href="privacy.html">Privacy</a>
+      <a href="support.html">Support</a>
+      <a href="https://www.instagram.com/cigarcalendar/" target="_blank" rel="noopener">Instagram</a>
+    </nav>
+    <p>Please smoke responsibly. 18+/21+ where applicable.</p>
+  </div>
+</footer>
+
+<div class="bar" id="bar">
+  <b>Cigar Calendar</b>
+  <a class="btn btn-gold" data-store href="#"><span data-store-label data-short>Download</span></a>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  /* ======= SETTINGS ======= */
+  var APP_STORE_URL = "";   // paste the App Store link here; while empty the buttons show "Coming soon"
+  /* ======================== */
+
+  var d = document, root = d.documentElement;
+  root.classList.add("js");
+  var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var $ = function(id){ return d.getElementById(id); };
+
+  /* App Store buttons */
+  d.querySelectorAll("[data-store]").forEach(function(a){
+    var label = a.querySelector("[data-store-label]");
+    if (APP_STORE_URL){ a.href = APP_STORE_URL; a.rel = "noopener"; }
+    else {
+      a.removeAttribute("href"); a.setAttribute("role", "link"); a.setAttribute("aria-disabled", "true"); a.classList.add("soon");
+      label.textContent = label.hasAttribute("data-short") ? "Coming soon" : "Coming soon to the App Store";
+    }
+  });
+
+  /* headline: wrap words for the entrance, keeping the <em> */
+  var wi = 0;
+  (function split(node){
+    Array.from(node.childNodes).forEach(function(n){
+      if (n.nodeType === 3){
+        var frag = d.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(function(t){
+          if (!t) return;
+          if (/^\s+$/.test(t)){ frag.appendChild(d.createTextNode(" ")); return; }
+          var s = d.createElement("span"); s.className = "w"; s.textContent = t; s.style.setProperty("--i", wi++); frag.appendChild(s);
+        });
+        node.replaceChild(frag, n);
+      } else if (n.nodeType === 1) split(n);
+    });
+  })($("headline"));
+
+  /* reveal with stagger */
+  var rvs = d.querySelectorAll(".rv");
+  rvs.forEach(function(el){ el.style.setProperty("--d", Array.prototype.indexOf.call(el.parentNode.children, el) % 4); });
+  if ("IntersectionObserver" in window && !reduce){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -6% 0px", threshold: .1 });
+    rvs.forEach(function(el){ io.observe(el); });
+  } else rvs.forEach(function(el){ el.classList.add("in"); });
+
+  /* scroll: progress line, parallax, sticky bar */
+  var hero = $("hero"), prog = $("progress"), bar = $("bar"), ticking = false, heroOn = true;
+  function onScroll(){
+    ticking = false;
+    var y = scrollY, max = root.scrollHeight - innerHeight;
+    prog.style.transform = "scaleX(" + (max > 0 ? Math.min(1, y / max) : 0) + ")";
+    heroOn = y < innerHeight * 1.1;
+    if (heroOn && !reduce) hero.style.setProperty("--sy", y);
+    bar.classList.toggle("show", y > innerHeight * .75 && y < max - 100);
+  }
+  addEventListener("scroll", function(){ if (!ticking){ ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  onScroll();
+
+  /* ---------- carousel: drag with momentum, spring snap ---------- */
+  (function(){
+    var car = $("car"), track = $("track"), slides = Array.from(track.children), dots = $("dots"), prev = $("prev"), next = $("next");
+    var n = slides.length, idx = 0, x = 0, v = 0, target = 0, step = 0, base = 0, raf = 0;
+    var dragging = false, startX = 0, startPos = 0, lastX = 0, lastT = 0, moved = 0;
+
+    slides.forEach(function(_, i){
+      var b = d.createElement("button"); b.type = "button"; b.setAttribute("aria-label", "Screenshot " + (i + 1) + " of " + n);
+      b.addEventListener("click", function(){ go(i); }); dots.appendChild(b);
+    });
+    function measure(){
+      var w = slides[0].offsetWidth, gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+      step = w + gap; base = (car.clientWidth - w) / 2;
+      target = pos(idx); if (!dragging){ x = target; v = 0; paint(); }
+    }
+    function pos(i){ return base - i * step; }
+    function paint(){ track.style.transform = "translate3d(" + x.toFixed(2) + "px,0,0)"; }
+    function mark(){
+      slides.forEach(function(s, i){ s.classList.toggle("on", i === idx); });
+      Array.from(dots.children).forEach(function(b, i){ b.setAttribute("aria-current", i === idx ? "true" : "false"); });
+      prev.disabled = idx === 0; next.disabled = idx === n - 1;
+    }
+    function go(i){
+      idx = Math.max(0, Math.min(n - 1, i)); target = pos(idx); mark();
+      if (reduce){ x = target; v = 0; paint(); return; }
+      if (!raf) raf = requestAnimationFrame(spring);
+    }
+    function spring(){
+      v += (target - x) * .085; v *= .74; x += v; paint();
+      if (Math.abs(v) < .05 && Math.abs(target - x) < .3){ x = target; paint(); raf = 0; return; }
+      raf = requestAnimationFrame(spring);
+    }
+    car.addEventListener("pointerdown", function(e){
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      dragging = true; moved = 0; startX = lastX = e.clientX; startPos = x; lastT = e.timeStamp; v = 0;
+      cancelAnimationFrame(raf); raf = 0; car.classList.add("drag");
+      try { car.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+    car.addEventListener("pointermove", function(e){
+      if (!dragging) return;
+      var dx = e.clientX - startX, nx = startPos + dx, min = pos(n - 1), max = pos(0);
+      if (nx > max) nx = max + (nx - max) * .35; else if (nx < min) nx = min + (nx - min) * .35;   // rubber band at the ends
+      var dt = Math.max(1, e.timeStamp - lastT);
+      v = v * .5 + ((e.clientX - lastX) / dt * 16.7) * .5;                                       // px per frame, smoothed
+      lastX = e.clientX; lastT = e.timeStamp; moved = Math.max(moved, Math.abs(dx)); x = nx; paint();
+    });
+    function release(e){
+      if (!dragging) return;
+      dragging = false; car.classList.remove("drag");
+      if (e.timeStamp - lastT > 90) v = 0;                           // finger rested before lifting: no throw
+      var projected = x + v * 9;                                     // where the throw would coast to
+      var i = Math.round((base - projected) / step);
+      i = Math.max(idx - 1, Math.min(idx + 1, i));                   // one screen per swipe
+      if (reduce) v = 0;
+      go(i);
+    }
+    car.addEventListener("pointerup", release);
+    car.addEventListener("pointercancel", release);
+    car.addEventListener("click", function(e){ if (moved > 6){ e.preventDefault(); e.stopPropagation(); } }, true);
+    slides.forEach(function(s, i){ s.addEventListener("click", function(){ if (moved <= 6) go(i); }); });
+    car.addEventListener("keydown", function(e){
+      if (e.key === "ArrowRight"){ go(idx + 1); e.preventDefault(); }
+      else if (e.key === "ArrowLeft"){ go(idx - 1); e.preventDefault(); }
+    });
+    prev.addEventListener("click", function(){ go(idx - 1); });
+    next.addEventListener("click", function(){ go(idx + 1); });
+    var rt; addEventListener("resize", function(){ clearTimeout(rt); rt = setTimeout(measure, 120); });
+    mark(); measure();
+    if (d.fonts && d.fonts.ready) d.fonts.ready.then(measure);
+  })();
+
+  if (reduce) return;
+
+  /* phone tilt toward the cursor + gentle hero parallax */
+  var phone = $("phone"), tx = 0, ty = 0, cx = 0, cy = 0, moving = false;
+  function ease(){
+    cx += (tx - cx) * .08; cy += (ty - cy) * .08;
+    hero.style.setProperty("--mx", cx.toFixed(3));
+    phone.style.setProperty("--ry", (cx * 20).toFixed(2) + "deg");
+    phone.style.setProperty("--rx", (cy * -14).toFixed(2) + "deg");
+    if (Math.abs(tx - cx) + Math.abs(ty - cy) > .002) requestAnimationFrame(ease); else moving = false;
+  }
+  function aim(a, b){ tx = a; ty = b; if (!moving){ moving = true; requestAnimationFrame(ease); } }
+  if (matchMedia("(pointer:fine)").matches){
+    hero.addEventListener("pointermove", function(e){
+      var r = phone.getBoundingClientRect();
+      var a = (e.clientX - (r.left + r.width / 2)) / innerWidth * 1.6, b = (e.clientY - (r.top + r.height / 2)) / innerHeight * 1.6;
+      aim(Math.max(-1, Math.min(1, a)), Math.max(-1, Math.min(1, b)));
+    }, { passive: true });
+    hero.addEventListener("pointerleave", function(){ aim(0, 0); });
+  }
+
+  /* smoke: a few large soft sprites rising and curling from behind the phone */
+  var cv = $("smoke"), ctx = cv.getContext("2d"), W = 0, H = 0, puffs = [], sprite = d.createElement("canvas");
+  (function(){
+    sprite.width = sprite.height = 128; var g = sprite.getContext("2d"), rg = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    rg.addColorStop(0, "rgba(243,233,216,.5)"); rg.addColorStop(.45, "rgba(214,196,168,.16)"); rg.addColorStop(1, "rgba(214,196,168,0)");
+    g.fillStyle = rg; g.fillRect(0, 0, 128, 128);
+  })();
+  var origin = { x: 0, y: 0 };
+  function size(){
+    var dpr = Math.min(devicePixelRatio || 1, 1.25);                 // smoke is soft; low resolution is invisible and cheap
+    W = hero.clientWidth; H = hero.clientHeight; cv.width = Math.round(W * dpr * .5); cv.height = Math.round(H * dpr * .5);
+    ctx.setTransform(cv.width / W, 0, 0, cv.height / H, 0, 0);
+    var r = $("stage").getBoundingClientRect(), hr = hero.getBoundingClientRect();
+    origin.x = r.left - hr.left + r.width / 2; origin.y = r.top - hr.top + r.height * .82;
+    var count = W < 700 ? 16 : 26; puffs.length = 0;
+    for (var i = 0; i < count; i++) puffs.push(puff(Math.random()));
+  }
+  function puff(life){
+    return { life: life, speed: .0009 + Math.random() * .0011, ox: (Math.random() - .5) * 90, sway: 40 + Math.random() * 110,
+      ph: Math.random() * 6.283, fr: .6 + Math.random() * .9, r0: 40 + Math.random() * 50, r1: 190 + Math.random() * 200, a: .16 + Math.random() * .2, rise: .55 + Math.random() * .4 };
+  }
+  var last = 0, seen = true;
+  if ("IntersectionObserver" in window) new IntersectionObserver(function(es){ seen = es[0].isIntersecting; }).observe(hero);
+  function draw(t){
+    requestAnimationFrame(draw);
+    if (!seen || d.hidden) { last = t; return; }
+    var dt = Math.min(3, (t - last) / 16.7 || 1); last = t;
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "lighter";
+    for (var i = 0; i < puffs.length; i++){
+      var p = puffs[i]; p.life += p.speed * dt;
+      if (p.life >= 1) puffs[i] = p = puff(0);
+      var l = p.life, y = origin.y - l * H * p.rise, curl = Math.sin(l * 5 * p.fr + p.ph + t / 5200) * p.sway * l;
+      var px = origin.x + p.ox * (1 - l * .3) + curl + l * l * 60, r = p.r0 + (p.r1 - p.r0) * l;
+      ctx.globalAlpha = p.a * Math.sin(Math.PI * Math.min(1, l * 1.05)) * (1 - l * .35);
+      ctx.drawImage(sprite, px - r, y - r, r * 2, r * 2);
+    }
+    ctx.globalAlpha = 1;
+  }
+  size(); requestAnimationFrame(draw);
+  var rs; addEventListener("resize", function(){ clearTimeout(rs); rs = setTimeout(size, 160); });
+})();
+</script>
+</body>
+</html>
